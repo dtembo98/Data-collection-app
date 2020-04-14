@@ -9,6 +9,7 @@ const phraseRoutes = require("./routes/eng_phrases.routes");
 var corOptions = {
   origin: "http://localhost:3000",
 };
+
 app.use(cors(corOptions));
 // parse requests of content-type - application/json
 app.use(express.json());

@@ -2,7 +2,12 @@ const User = require("../models/user.model.js");
 const config = require("../config/auth.config.js");
 const jwt = require("jsonwebtoken");
 const bycrypt = require("bcryptjs");
-
+const services = require("../services/fetch-phrases");
+const sequelize = require("../config/database");
+var phrases = sequelize.import("../models/eng_phrases.js");
+const refreshTokenslist = [];
+var numberOfUsers = 0;
+var offset = numberOfUsers * 10;
 exports.signUp = (req, res) => {
   //save user to Database
   User.create({
@@ -11,7 +16,7 @@ exports.signUp = (req, res) => {
     phoneNumber: req.body.phoneNumber,
     password: bycrypt.hashSync(req.body.password, 8),
   })
-    .then((user) => {
+    .then(() => {
       return res.status(201).json({
         message: "User was registered successfully",
       });
@@ -23,13 +28,13 @@ exports.signUp = (req, res) => {
     });
 };
 
-exports.signIn = (req, res) => {
+exports.signIn = async (req, res) => {
   User.findOne({
     where: {
       phoneNumber: req.body.phoneNumber,
     },
   })
-    .then((user) => {
+    .then(async (user) => {
       if (!user) {
         return res.status(404).json({ message: "User not Found" });
       }
@@ -46,18 +51,102 @@ exports.signIn = (req, res) => {
       }
 
       const token = jwt.sign({ id: user.id }, config.secret, {
-        expiresIn: 86400, //24 hours
+        expiresIn: "20m", //86400 24 hours
       });
-      return res.status(200).json({
+      const refreshToken = jwt.sign(
+        { id: user.id },
+        config.refreshTokenSecret,
+        {
+          expiresIn: 86400,
+        }
+      );
+      refreshTokenslist.push(refreshToken);
+      const userObj = {
         id: user.id,
         firstName: user.firstName,
         lastName: user.lastName,
         phoneNumber: user.phoneNumber,
         accessToken: token,
+        refreshToken,
+        phrases: [],
+      };
+      //req.user = userObj;
+      numberOfUsers += 1;
+      const results = await phrases.findAll({
+        limit: 10,
+        offset,
+        where: { phraseStatus: 0 },
       });
+      let promise = Promise.resolve();
+
+      results.forEach((phraseObj) => {
+        promise = promise.then(() => {
+          return phrases.update(
+            {
+              userId: user.id,
+              phraseStatus: 1,
+            },
+            { where: { Id: phraseObj.Id, phraseStatus: 0 } }
+          );
+        });
+      });
+      promise
+        .then(() => {
+          phrases
+            .findAll({
+              where: { userId: user.id, phraseStatus: 1 },
+              limit: 10,
+            })
+            .then((data) => {
+              userObj.phrases.push(...data);
+
+              return res.status(200).json(userObj);
+            });
+          // const loggedUser = services.fetchPhrases(req, res);
+          // loggedUser
+          //   .then((data) => {
+          //     return res.status(200).json(data);
+          //   })
+          //   .catch((err) => {
+          //     return res.status(500).json({ message: err.message });
+          //   });
+        })
+        .catch((err) => {
+          console.log(err);
+          return res.status(500).json({ message: err.message });
+        });
     })
     .catch((err) => {
-      console.log(err);
-      return res.status(500).json({ message: err.message });
+      res.status(404).status({ err: err.message });
     });
+};
+exports.token = (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(401).json({
+      message: "not authorised",
+    });
+  }
+  if (!refreshTokenslist.includes(refreshToken)) {
+    return res.status(403).json({ message: "oops" });
+  }
+  jwt.verify(refreshToken, config.refreshTokenSecret, (err, user) => {
+    if (err) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+    const accessToken = jwt.sign({ id: user.id }, config.token, {
+      expiresIn: "20m",
+    });
+    return res.status(200).json({ accessToken: accessToken });
+  });
+};
+exports.logOut = (req, res) => {
+  const refreshToken = req.body;
+  refreshToken = refreshTokenslist.filter((t) => t == refreshToken);
+  refreshTokenslist.splice(refreshTokenslist);
+  return res.status(200).json({
+    message: "Logout successful",
+  });
 };
