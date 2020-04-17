@@ -2,7 +2,7 @@ const User = require("../models/user.model.js");
 const config = require("../config/auth.config.js");
 const jwt = require("jsonwebtoken");
 const bycrypt = require("bcryptjs");
-const services = require("../services/fetch-phrases");
+const services = require("../services/change-phrases-status");
 const sequelize = require("../config/database");
 var phrases = sequelize.import("../models/eng_phrases.js");
 const refreshTokenslist = [];
@@ -71,12 +71,24 @@ exports.signIn = async (req, res) => {
         phrases: [],
       };
       //req.user = userObj;
-      numberOfUsers += 1;
+
+      const alreadySent_phrases = await phrases.findAll({
+        limit: 5,
+        where: { userId: user.id, translated_status: false },
+      });
+      // send already phrases that have not been yet been translated but been assigned
+      if (alreadySent_phrases.length !== 0) {
+        userObj.phrases.push(...alreadySent_phrases);
+
+        return res.status(200).json(userObj);
+      }
+      //fetch phrases that have not yet been assigned to any user
+
       const results = await phrases.findAll({
         limit: 10,
-        offset,
-        where: { phraseStatus: 0 },
+        where: { sent_status: false, translated_status: false },
       });
+
       let promise = Promise.resolve();
 
       results.forEach((phraseObj) => {
@@ -84,9 +96,9 @@ exports.signIn = async (req, res) => {
           return phrases.update(
             {
               userId: user.id,
-              phraseStatus: 1,
+              sent_status: true,
             },
-            { where: { Id: phraseObj.Id, phraseStatus: 0 } }
+            { where: { Id: phraseObj.Id, sent_status: false } }
           );
         });
       });
@@ -94,13 +106,14 @@ exports.signIn = async (req, res) => {
         .then(() => {
           phrases
             .findAll({
-              where: { userId: user.id, phraseStatus: 1 },
+              where: { userId: user.id, sent_status: true },
               limit: 10,
             })
             .then((data) => {
               userObj.phrases.push(...data);
 
               return res.status(200).json(userObj);
+              //setTimeout(services.changePhraseStatus(userObj.id), 60000);
             });
           // const loggedUser = services.fetchPhrases(req, res);
           // loggedUser
