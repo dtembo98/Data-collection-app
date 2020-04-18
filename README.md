@@ -104,4 +104,8 @@ To fetch Data the client-app should reach the above posted endpoint
             "updatedAt": "2020-04-18T10:14:21.000Z"
             
         }]
+        
+ #### Note:
+    
+    use access tokens whenever sending a get request set the request headers use ##### x-access-token as the key and the access token as the value
 
