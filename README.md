@@ -107,5 +107,24 @@ To fetch Data the client-app should reach the above posted endpoint
         
  #### Note:
     
-    use access tokens whenever sending a get request set the request headers use ##### x-access-token as the key and the access token as the value
+    use access tokens whenever sending a get request set the request headers use x-access-token as the key and the access token as the value
+
+### Send translated phrases
+To send translated phrases from the users use the endpoint:
+
+http://localhost:3001/api/translate/phrase
+
+#### http Method: POST
+
+data should be sent as a json object like so:
+
+{  
+
+	"phraseId":"1",
+ 
+	"tonga":"uli buti?"
+ 
+}
+
+#### Api Response:
 
