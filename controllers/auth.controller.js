@@ -150,7 +150,7 @@ exports.token = (req, res) => {
       });
     }
     const accessToken = jwt.sign({ id: user.id }, config.token, {
-      expiresIn: "20m",
+      expiresIn: "60m",
     });
     return res.status(200).json({ accessToken: accessToken });
   });

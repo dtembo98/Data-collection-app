@@ -48,11 +48,14 @@ exports.fetchPhrases = async (req, res) => {
 };
 exports.postTranslatedPhrases = async (req, res) => {
   const { phraseId, tonga } = req.body;
+  //const phraseId = parseInt(phrasenumber);
+
   if (phraseId && tonga) {
     const phrase = await translatedPhrases.findAll({
       where: { phraseId: phraseId },
     });
-    console.log(JSON.stringify(phrase));
+    // console.log(JSON.stringify(phrase));
+    console.log(+phraseId);
     if (phrase.length == 0) {
       translatedPhrases
         .create({
@@ -62,6 +65,13 @@ exports.postTranslatedPhrases = async (req, res) => {
         })
         .then((data) => {
           if (data) {
+            phrases.update(
+              {
+                translated_status: true,
+              },
+              { where: { Id: phraseId, translated_status: false } }
+            );
+
             return res.status(201).json({
               message: "phrase translated",
             });
