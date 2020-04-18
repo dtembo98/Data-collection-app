@@ -128,3 +128,7 @@ data should be sent as a json object like so:
 
 #### Api Response:
 
+
+{
+    "message": "phrase already translated"
+}
