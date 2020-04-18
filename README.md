@@ -43,20 +43,35 @@ data should be sent as a json object like so:
 
 {
     "id": 1,
+    
     "firstName": "David",
+    
     "lastName": "Tembo",
+    
     "phoneNumber": "0979------",
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTg3MjMyMzE0LCJleHAiOjE1ODcyMzM1MTR9.KJ_3kpBXjafW14oOEjDUCmU_uYPELI0w6SOUJNfwi70",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTg3MjMyMzE0LCJleHAiOjE1ODczMTg3MTR9.CKDNCB0zxU0sbEJTBJpteELZoIY6_nCDJ9OIzl0uZ1g",
+    
+    "accessToken": 
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTg3MjMyMzE0LCJleHAiOjE1ODcyMzM1MTR9.KJ_3kpBXjafW14oOEjDUCmU_uYPELI0w6SOUJNfwi70",
+    
+    "refreshToken": 
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNTg3MjMyMzE0LCJleHAiOjE1ODczMTg3MTR9.CKDNCB0zxU0sbEJTBJpteELZoIY6_nCDJ9OIzl0uZ1g",
+    
     "phrases": [
         {
             "Id": 32,
+            
             "userId": 1,
+            
             "translated_status": 0,
+            
             "sent_status": 1,
+            
             "phrase": "What would Tom think?",
+            
             "createdAt": "2020-04-18T11:32:26.000Z",
+            
             "updatedAt": "2020-04-18T10:14:21.000Z"
+            
         }]
 
 
