@@ -9,8 +9,11 @@ data should be sent as a json object like so:
 
 {
 "firstName":"name",
+
 "lastName":"l-name",
+
 "phoneNumber":"097935566",
+
 "password":"******"
 }
 #### Response:
