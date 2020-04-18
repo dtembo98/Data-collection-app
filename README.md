@@ -1,5 +1,5 @@
 # Data-collection-app
-A simple express Restful API for collecting data for machine translation.
+A simple express Restful API for collecting data for machine translation.it aims to make a dataset that will be used for machine translation.it sends an english phrase thats should be translated into a specified local language then stores the english phrase along with its parallel local language translation
 ## API endpoints
 ### Sign-up users
 To sign up users use the endpoint:
