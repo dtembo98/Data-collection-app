@@ -23,7 +23,7 @@ data should be sent as a json object like so:
 #### Api Response:
 registered successfully
 
-## API endpoints
+### Sign-in users
 To log in use the endpoint:
 
 http://localhost:3001/api/auth/signin
