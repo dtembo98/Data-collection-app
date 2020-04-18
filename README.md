@@ -130,5 +130,7 @@ data should be sent as a json object like so:
 
 
 {
-    "message": "phrase already translated"
+  
+  "message": "phrase already translated"
+  
 }
