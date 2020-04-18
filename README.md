@@ -42,7 +42,8 @@ data should be sent as a json object like so:
 #### Api Response:
 
 {
-    "id": 1,
+   
+   "id": 1,
     
     "firstName": "David",
     
@@ -74,4 +75,33 @@ data should be sent as a json object like so:
             
         }]
 
+
+### Fetch more phrases for translation
+To sign up users use the endpoint:
+
+http://localhost:3001/api/phrases
+
+#### http Method: GET
+
+To fetch Data the client-app should reach the above posted endpoint
+#### Api Response:
+
+ "phrases": [
+ 
+        {
+            "Id": 32,
+            
+            "userId": 1,
+            
+            "translated_status": 0,
+            
+            "sent_status": 1,
+            
+            "phrase": "What would Tom think?",
+            
+            "createdAt": "2020-04-18T11:32:26.000Z",
+            
+            "updatedAt": "2020-04-18T10:14:21.000Z"
+            
+        }]
 
