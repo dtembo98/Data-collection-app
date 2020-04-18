@@ -9,6 +9,7 @@ http://localhost:3001/api/auth/signup
 
 data should be sent as a json object like so:
 
+
 {
 
 "firstName":"name",
@@ -39,6 +40,8 @@ data should be sent as a json object like so:
 "password":"******"
 
 }
+
+
 #### Api Response:
 
 {
