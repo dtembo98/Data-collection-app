@@ -9,12 +9,12 @@ const refreshTokenslist = [];
 var numberOfUsers = 0;
 var offset = numberOfUsers * 10;
 exports.signUp = (req, res) => {
-  //save user to Database
+  const { firstName, lastName, phoneNumber, password } = req.body;
   User.create({
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    phoneNumber: req.body.phoneNumber,
-    password: bycrypt.hashSync(req.body.password, 8),
+    firstName,
+    lastName,
+    phoneNumber,
+    password: bycrypt.hashSync(password, 8),
   })
     .then(() => {
       return res.status(201).json({
@@ -111,21 +111,12 @@ exports.signIn = async (req, res) => {
             })
             .then((data) => {
               userObj.phrases.push(...data);
-
+              // execute a function for removing  untranslated phrases
+              services.changePhraseStatus(user.id);
               return res.status(200).json(userObj);
-              //setTimeout(services.changePhraseStatus(userObj.id), 60000);
             });
-          // const loggedUser = services.fetchPhrases(req, res);
-          // loggedUser
-          //   .then((data) => {
-          //     return res.status(200).json(data);
-          //   })
-          //   .catch((err) => {
-          //     return res.status(500).json({ message: err.message });
-          //   });
         })
         .catch((err) => {
-          console.log(err);
           return res.status(500).json({ message: err.message });
         });
     })

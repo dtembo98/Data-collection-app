@@ -1,10 +1,10 @@
-const Phrases = require("../models/eng_phrases");
-const Sequelize = require("sequelize");
+const services = require("../services/change-phrases-status");
 const sequelize = require("../config/database");
 var phrases = sequelize.import("../models/eng_phrases.js");
 const translatedPhrases = require("../models/translated_phrases");
 
 exports.fetchPhrases = async (req, res) => {
+  // Retrieve phrases that have already been assigned to user
   const already_sent_phrases = await phrases.findAll({
     where: {
       userId: req.userId,
@@ -12,9 +12,12 @@ exports.fetchPhrases = async (req, res) => {
     },
     limit: 5,
   });
+  // send phrases to the user if phrases exists
   if (already_sent_phrases.length !== 0) {
     return res.status(200).json({ phrases: [...already_sent_phrases] });
-  } else {
+  }
+  // if phrases do not exist  for that user then assign new phrases to the user
+  else {
     const results = await phrases.findAll({
       limit: 10,
       where: { sent_status: false, translated_status: false },
@@ -40,31 +43,42 @@ exports.fetchPhrases = async (req, res) => {
           limit: 10,
         })
         .then((data) => {
+          services.changePhraseStatus(req.userId);
           return res.status(200).json({ phrases: [...data] });
-          //setTimeout(services.changePhraseStatus(userObj.id), 60000);
         });
     });
   }
 };
 exports.postTranslatedPhrases = async (req, res) => {
   const { phraseId, tonga } = req.body;
-  //const phraseId = parseInt(phrasenumber);
 
   if (phraseId && tonga) {
-    const phrase = await translatedPhrases.findAll({
+    // prevent user from translating phrases that have not been assigned to them
+    const rightUser = await phrases.findOne({
+      where: {
+        Id: phraseId,
+        userId: req.userId,
+      },
+    });
+    //check if phrase is already translated
+    const phrase = await translatedPhrases.findOne({
       where: { phraseId: phraseId },
     });
-    // console.log(JSON.stringify(phrase));
-    console.log(+phraseId);
-    if (phrase.length == 0) {
-      translatedPhrases
-        .create({
-          userId: req.userId,
-          phraseId: phraseId,
-          tonga: tonga,
-        })
-        .then((data) => {
-          if (data) {
+
+    // check if phrase does not exist exist create one if exist display error message
+    // check if its the right user
+    if (!phrase) {
+      //prevent user from translating phrase that was not assigned to them
+      if (rightUser) {
+        await translatedPhrases
+          .create({
+            userId: req.userId,
+            phraseId: phraseId,
+            tonga: tonga,
+          })
+          .then(() => {
+            //after successfully creating a translated phrase
+            //update the eng_phrases table
             phrases.update(
               {
                 translated_status: true,
@@ -75,18 +89,28 @@ exports.postTranslatedPhrases = async (req, res) => {
             return res.status(201).json({
               message: "phrase translated",
             });
-          }
-        })
-        .catch((err) => {
-          return res.status(500).json({ message: err.message });
+          })
+          .catch((err) => {
+            return res.status(500).json({ message: err.message });
+          });
+      }
+      // display error message to users who attempts to tranlate phrases not assigned to them
+      else {
+        return res.status(400).json({
+          message: "phrase was not assigned to user ",
         });
-    } else {
-      return res.status(400).json({ message: "phrase already translated" });
+      }
     }
-  } else {
+    //if phrase already exist respond with the message
+    else {
+      return res.status(400).json({ message: "phrase already translated " });
+    }
+  }
+  // when the phraseId or tonga phrase is are not provided respond with the error message
+  else {
     return res
       .status(400)
-      .json({ message: "please send the phraseId and tonga phrase" });
+      .json({ message: "please send the phraseId and tonga phrase " });
   }
 };
 exports.fetchAllPhrases = (req, res) => {
