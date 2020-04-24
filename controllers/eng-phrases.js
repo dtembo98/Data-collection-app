@@ -2,7 +2,8 @@ const services = require("../services/change-phrases-status");
 const sequelize = require("../config/database");
 var phrases = sequelize.import("../models/eng_phrases.js");
 const translatedPhrases = require("../models/translated_phrases");
-
+const redis = require("redis");
+var rediscl = redis.createClient();
 exports.fetchPhrases = async (req, res) => {
   // Retrieve phrases that have already been assigned to user
   const already_sent_phrases = await phrases.findAll({

@@ -7,7 +7,12 @@ const sequelize = require("../config/database");
 var phrases = sequelize.import("../models/eng_phrases.js");
 const refreshTokenslist = [];
 var numberOfUsers = 0;
-var offset = numberOfUsers * 10;
+const redis = require("redis");
+var rediscl = redis.createClient();
+rediscl.on("error", (error) => {
+  console.log(error);
+});
+
 exports.signUp = (req, res) => {
   const { firstName, lastName, phoneNumber, password } = req.body;
   User.create({
@@ -60,7 +65,14 @@ exports.signIn = async (req, res) => {
           expiresIn: 86400,
         }
       );
-      refreshTokenslist.push(refreshToken);
+      //refreshTokenslist.push(refreshToken);
+      rediscl.set(
+        user.id,
+        JSON.stringify({
+          refreshToken,
+        })
+      );
+
       const userObj = {
         id: user.id,
         firstName: user.firstName,
@@ -125,31 +137,14 @@ exports.signIn = async (req, res) => {
     });
 };
 exports.token = (req, res) => {
-  const { refreshToken } = req.body;
-  if (!refreshToken) {
-    return res.status(401).json({
-      message: "not authorised",
-    });
-  }
-  if (!refreshTokenslist.includes(refreshToken)) {
-    return res.status(403).json({ message: "oops" });
-  }
-  jwt.verify(refreshToken, config.refreshTokenSecret, (err, user) => {
-    if (err) {
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
-    }
-    const accessToken = jwt.sign({ id: user.id }, config.token, {
-      expiresIn: "60m",
-    });
-    return res.status(200).json({ accessToken: accessToken });
+  const accessToken = jwt.sign({ id: req.userId }, config.secret, {
+    expiresIn: "20m", //86400 24 hours
   });
+
+  return res.status(200).json({ accessToken: accessToken });
 };
 exports.logOut = (req, res) => {
-  const refreshToken = req.body;
-  refreshToken = refreshTokenslist.filter((t) => t == refreshToken);
-  refreshTokenslist.splice(refreshTokenslist);
+  rediscl.del(req.userId);
   return res.status(200).json({
     message: "Logout successful",
   });

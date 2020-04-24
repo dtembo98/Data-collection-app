@@ -5,6 +5,7 @@ const useraAuthRoutes = require("./routes/auth.routes");
 const cors = require("cors");
 const sequelize = require("./config/database");
 const phraseRoutes = require("./routes/eng_phrases.routes");
+const redis = require("redis");
 
 var corOptions = {
   origin: "http://localhost:3000",
@@ -29,6 +30,7 @@ sequelize
   .sync()
   .then((result) => {
     app.listen(port);
+
     console.log("listening on port " + port);
   })
   .catch((err) => {
