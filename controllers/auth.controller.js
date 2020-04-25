@@ -62,7 +62,7 @@ exports.signIn = async (req, res) => {
         { id: user.id },
         config.refreshTokenSecret,
         {
-          expiresIn: 86400,
+          expiresIn: "3m",
         }
       );
       //refreshTokenslist.push(refreshToken);

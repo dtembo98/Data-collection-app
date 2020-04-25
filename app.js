@@ -5,11 +5,18 @@ const useraAuthRoutes = require("./routes/auth.routes");
 const cors = require("cors");
 const sequelize = require("./config/database");
 const phraseRoutes = require("./routes/eng_phrases.routes");
-const redis = require("redis");
+const helmet = require("helmet");
 
 var corOptions = {
   origin: "http://localhost:3000",
 };
+const sixtyDaysInSeconds = 5184000;
+app.use(
+  helmet.hsts({
+    maxAge: sixtyDaysInSeconds,
+  })
+);
+app.use(helmet.hidePoweredBy({ setTo: "PHP 7.2.0" }));
 
 app.use(cors(corOptions));
 // parse requests of content-type - application/json
