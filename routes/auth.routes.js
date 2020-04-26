@@ -13,5 +13,10 @@ router.post(
 router.post("/auth/signin", [validateRequest], authController.signIn);
 router.post("/auth/access-token", [verifyRefreshToken], authController.token);
 router.get("/auth/logout", [verifyToken], authController.logOut);
+router.post(
+  "/auth/delete-account",
+  [verifyToken],
+  authController.deleteAccount
+);
 
 module.exports = router;

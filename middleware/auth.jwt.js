@@ -37,8 +37,8 @@ verifyRefreshToken = (req, res, next) => {
     }
     if (decoded.id) {
       let redisToken = rediscl.get(decoded.id);
-
-      if (!redisToken || redisToken.refreshToken === refreshToken) {
+      console.log(decoded.id);
+      if (redisToken.refreshToken === refreshToken) {
         return res.status(400).json({
           message: "Nice Try ;- better luck next time",
         });

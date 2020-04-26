@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 // accepts name only as letters and converts to loerrcase
 const name = Joi.string()
-  .min(6)
+  .min(1)
   .max(30)
   .trim()
   .required()

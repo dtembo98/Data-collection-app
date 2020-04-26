@@ -5,8 +5,7 @@ const bycrypt = require("bcryptjs");
 const services = require("../services/change-phrases-status");
 const sequelize = require("../config/database");
 var phrases = sequelize.import("../models/eng_phrases.js");
-const refreshTokenslist = [];
-var numberOfUsers = 0;
+
 const redis = require("redis");
 var rediscl = redis.createClient();
 rediscl.on("error", (error) => {
@@ -62,7 +61,7 @@ exports.signIn = async (req, res) => {
         { id: user.id },
         config.refreshTokenSecret,
         {
-          expiresIn: "3m",
+          expiresIn: "60m",
         }
       );
       //refreshTokenslist.push(refreshToken);
@@ -136,7 +135,15 @@ exports.signIn = async (req, res) => {
       res.status(404).status({ err: err.message });
     });
 };
-exports.token = (req, res) => {
+exports.token = async (req, res) => {
+  const result = await rediscl.lrange("tokens", 0, -1);
+  if (result.indexOf(req.userId) > -1) {
+    return res.status(400).json({
+      status: 400,
+      error: "Invalid Token",
+    });
+  }
+
   const accessToken = jwt.sign({ id: req.userId }, config.secret, {
     expiresIn: "20m", //86400 24 hours
   });
@@ -148,4 +155,26 @@ exports.logOut = (req, res) => {
   return res.status(200).json({
     message: "Logout successful",
   });
+};
+exports.deleteAccount = (req, res) => {
+  User.destroy({
+    where: { id: req.userId },
+  })
+    .then((user) => {
+      rediscl.del(req.userId);
+      rediscl.LPUSH("tokens", req.userId);
+      if (user == 0) {
+        return res.status(400).json({
+          message: "account already deleted",
+        });
+      }
+      return res.status(200).json({
+        message: "account deleted",
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        message: err.message,
+      });
+    });
 };

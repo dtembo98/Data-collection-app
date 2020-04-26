@@ -1,4 +1,5 @@
+require("dotenv").config();
 module.exports = {
-  secret: "vision-ai-secret-key",
-  refreshTokenSecret: "vision-ai-refresh-token-key",
+  secret: process.env.ACCESS_TOKEN_SECRET,
+  refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
 };
